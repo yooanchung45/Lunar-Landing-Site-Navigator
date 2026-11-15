@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lunar Navigator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Lunar Navigator</h1>
+    <p>South polar landing site analysis // Sun and Earth line-of-sight</p>
+    <span class="clock" id="clock" title="Current UTC"></span>
+  </header>
+
+  <main class="layout">
+    <aside class="panel controls">
+      <h2>Site</h2>
+      <label>Candidate
+        <select id="site"></select>
+      </label>
+      <div class="row">
+        <label>Latitude<input id="lat" type="number" step="0.01" min="-90" max="-60" value="-89.9"></label>
+        <label>Longitude<input id="lon" type="number" step="0.01" min="-180" max="360" value="129.8"></label>
+      </div>
+
+      <h2>Period</h2>
+      <div class="row">
+        <label>Start (UTC)<input id="start" type="date" value="2028-03-01"></label>
+        <label>Days<input id="days" type="number" min="1" max="3650" value="365"></label>
+      </div>
+      <label>Time step (minutes)<input id="step" type="number" min="1" max="1440" value="60"></label>
+
+      <h2>Mission</h2>
+      <label>Surface stay (days)<input id="stayDays" type="number" step="0.5" min="0.5" max="60" value="6.5"></label>
+      <label class="check"><input id="useDsn" type="checkbox" checked> Earth link needs a Deep Space Network station in view</label>
+      <p class="hint">Artemis III plans a 6.5-day stay. Every possible landing date in the Period is tried.</p>
+
+      <h2>Margins</h2>
+      <label>Lander antenna / panel height (m)<input id="obsHeight" type="number" step="0.5" min="0" max="100" value="2"></label>
+      <div class="row">
+        <label>Sun min elev (°)<input id="sunMin" type="number" step="0.1" min="0" value="0"></label>
+        <label>Earth min elev (°)<input id="earthMin" type="number" step="0.1" min="0" value="0"></label>
+      </div>
+
+      <button id="go" type="button">Evaluate</button>
+      <p id="status" class="hint" role="status"></p>
+      <p class="hint" id="terrainNote"></p>
+    </aside>
+
+    <section class="results">
+      <div class="panel map-panel wide">
+        <div class="map-bar">
+          <h2>Site map</h2>
+          <div class="seg" id="baseSeg" role="group" aria-label="Base map">
+            <button type="button" data-base="imagery" class="on" title="NASA LRO camera imagery">Imagery</button>
+            <button type="button" data-base="elevation" title="NASA LOLA laser altimeter, colored by height">Elevation</button>
+            <button type="button" data-base="relief" title="Shaded relief computed here from LOLA elevation - no shadows from the real Sun, so craters are readable">Shaded relief</button>
+            <button type="button" data-base="plain">Plain</button>
+          </div>
+          <button type="button" id="resetView" class="ghost">Reset view</button>
+          <button type="button" id="zoomSite" class="ghost">Zoom to site</button>
+        </div>
+        <div class="map-bar layers">
+          <span class="lbl">Overlays</span>
+          <div class="ov" title="Share of time each spot is sunlit, averaged over an 18.6-year lunar cycle">
+            <label><input type="checkbox" data-overlay="sunlight"> Sunlight</label>
+            <input type="range" data-ovop="sunlight" min="0.1" max="1" step="0.05" value="0.7" aria-label="Sunlight opacity" title="Sunlight opacity">
+          </div>
+          <div class="ov" title="Share of time Earth is above the local horizon, 18.6-year average">
+            <label><input type="checkbox" data-overlay="earthvis"> Earth visibility</label>
+            <input type="range" data-ovop="earthvis" min="0.1" max="1" step="0.05" value="0.7" aria-label="Earth visibility opacity" title="Earth visibility opacity">
+          </div>
+          <div class="ov" title="Danuri/ShadowCam photos of permanently shadowed craters (only where NASA/KARI have published them)">
+            <label><input type="checkbox" data-overlay="shadowcam"> ShadowCam</label>
+            <input type="range" data-ovop="shadowcam" min="0.1" max="1" step="0.05" value="1" aria-label="ShadowCam opacity" title="ShadowCam opacity">
+          </div>
+        </div>
+        <div class="map-bar layers" id="reliefCtl" hidden>
+          <span class="lbl">Shaded relief light</span>
+          <label class="slider">Direction <input type="range" id="lightAz" min="0" max="359" step="1" value="315"> <output id="lightAzOut">315°</output></label>
+          <label class="slider">Height <input type="range" id="lightEl" min="2" max="45" step="1" value="12"> <output id="lightElOut">12°</output></label>
+          <span class="hint">Direction is where the light comes from, clockwise from the top of the map.</span>
+        </div>
+        <div class="map-wrap"><div id="map" role="application" aria-label="South pole map. Scroll to zoom, click to place the site."></div><div id="legend" class="legend" hidden></div></div>
+        <p class="hint">Looking down on the south pole, longitude 0° at the top, east clockwise. Scroll to zoom, drag to pan, click to place the site, or drag the green marker to fine-tune. Coordinates under the cursor are shown top right.</p>
+      </div>
+      <div id="cards" class="cards"></div>
+      <div class="panel wide">
+        <h2>Candidate sites: ranking</h2>
+        <p class="hint">Candidates are found automatically from NASA's sunlight, Earth-visibility and elevation maps (flat spots that are lit and can see Earth). Orange "published" rows are sites researchers proposed inside NASA's Artemis III regions (sources in backend/artemis_sites.py). Each is simulated over the Period set on the left. Score = weighted average of four 0-100 parts. Set the requirements and weights first, then rank; moving the weights afterwards re-ranks instantly.</p>
+        <div class="reqs">
+          <h3>Requirements (a site that fails any of these is ruled out)</h3>
+          <div class="row">
+            <label>Max slope (°)<input id="reqSlope" type="number" step="0.5" min="0" max="45" value="8"></label>
+            <label>Sun during stay (%)<input id="reqSun" type="number" step="5" min="0" max="100" value="90"></label>
+          </div>
+          <div class="row">
+            <label>Earth link during stay (%)<input id="reqEarth" type="number" step="5" min="0" max="100" value="50"></label>
+            <label>On at least this % of landing dates<input id="reqDates" type="number" step="5" min="0" max="100" value="10"></label>
+          </div>
+        </div>
+        <div class="reqs">
+          <h3>Weights (what matters most for the ranking; 0 ignores it)</h3>
+        <div id="weights" class="weights">
+          <label>Power (Sun up)<input type="range" id="w_power" min="0" max="10" value="3"><b id="wo_power"></b></label>
+          <label>Comms (Sun + Earth together)<input type="range" id="w_comms" min="0" max="10" value="3"><b id="wo_comms"></b></label>
+          <label>Reliability (many landing dates work)<input type="range" id="w_reliability" min="0" max="10" value="2"><b id="wo_reliability"></b></label>
+          <label>Terrain (flat ground)<input type="range" id="w_terrain" min="0" max="10" value="2"><b id="wo_terrain"></b></label>
+        </div>
+        </div>
+        <button id="runBoard" type="button">Rank candidate sites</button>
+        <span id="boardStatus" class="hint" role="status"></span>
+        <p id="recommend" class="recommend" hidden></p>
+        <div id="board" class="windows"></div>
+      </div>
+      <div class="panel wide">
+        <h2>Accuracy check vs NASA maps</h2>
+        <p class="hint">Our simulation is compared with NASA's own long-term sunlight and Earth-visibility maps (18.6-year averages) at sites published inside the Artemis III regions, and at random points near the pole. NASA's maps are the reference, so this tests our geometry and terrain handling, not NASA's data.</p>
+        <details class="guide"><summary>How to read this</summary>
+          <p><b>The idea.</b> NASA already published maps of how often every spot near the pole is sunlit and can see Earth, averaged over the Moon's 18.6-year cycle. If our own simulation is right, it should reproduce those numbers from scratch using only the terrain and the positions of the Sun and Earth.</p>
+          <p><b>The table.</b> For each published Artemis-region site: NASA's value, our value, and the difference in percentage points (Δ). A difference near 0 means we agree. Green is within 2 points, cyan is within the tolerance, red is beyond it.</p>
+          <p><b>The random-point line.</b> The same comparison at 60 random spots near the pole, so one lucky site cannot flatter the result. <i>Average error</i> shows a bias (+ means we are too bright). <i>Typical error (RMSE)</i> is how far off we usually are. <i>Within 3 pts</i> is the share of spots that agree closely. <i>Correlation</i> is 1.00 when our map has the same pattern as NASA's.</p>
+          <p><b>What it proves and does not.</b> It shows our geometry and terrain handling are sound. NASA's map is treated as the truth, so it cannot show NASA's own errors. Large errors on steep ground are expected, because the terrain data is coarser than the slopes.</p>
+          <p><b>The last column.</b> The authors who proposed these sites claimed they were sunlit and Earth-visible enough. We check those claims against NASA's own map: "misses" means NASA's map does not support the claim at that exact spot.</p>
+        </details>
+        <button id="runValidation" type="button">Run accuracy check</button>
+        <span id="validationStatus" class="hint" role="status"></span>
+        <p id="validationSummary" class="recommend" hidden></p>
+        <div id="validationTable" class="windows"></div>
+      </div>
+      <div class="panel">
+        <h2>Elevation above horizon</h2>
+        <div id="chartElev" class="chart"></div>
+      </div>
+      <div class="panel">
+        <h2>Sky view from site</h2>
+        <p class="hint">The grey area is the terrain skyline in every compass direction. The dots are where the Sun and Earth actually appear over the period: a dot is only usable when it is above the grey.</p>
+        <div id="chartSky" class="chart"></div>
+      </div>
+      <div class="panel">
+        <h2>Condition timeline</h2>
+        <div id="chartTimeline" class="chart short"></div>
+      </div>
+      <div class="panel">
+        <h2>Best landing date ranges</h2>
+        <p class="hint" id="missionNote"></p>
+        <div id="missionWindows" class="windows"></div>
+      </div>
+      <div class="panel wide">
+        <h2>Windows: Sun + Earth link</h2>
+        <div id="windows" class="windows"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

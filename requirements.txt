@@ -1,0 +1,17 @@
+certifi==2026.10.23
+fastapi==0.162.7
+httpx==0.28.1
+jplephem==2.24
+numpy==2.4.6
+pytest==9.2.0
+sgp4==2.27
+skyfield==1.55
+uvicorn==0.54.0
+pillow==13.0.0
+affine==3.0.1
+attrs==26.1.0
+click==8.5.1
+cligj==0.7.2
+pyparsing==3.3.3
+rasterio==1.4.4
+scipy==1.17.1
