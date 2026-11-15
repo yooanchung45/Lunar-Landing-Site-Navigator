@@ -175,7 +175,7 @@ function renderBoard() {
       `<td>${s.mission && s.mission.best.length ? fmtDate(s.mission.best[0].start).slice(0, 10) + " → " + fmtDate(s.mission.best[0].latest_start).slice(0, 10) : "none"}</td>` +
       `<td>${sc.slope_p90_deg == null ? "n/a" : sc.slope_p90_deg.toFixed(1) + "°"}${sc.safe ? "" : " (too steep)"}</td></tr>`;
   }).join("");
-  $("board").innerHTML = `<table><thead><tr><th>#</th><th>Site</th><th title="Specific point: latitude and longitude, accurate to about 10 m">Latitude / longitude</th><th>Score</th><th>Sun+Earth</th><th>Sun</th><th title="NASA long-term averages: sunlit / Earth visible">NASA map sun / Earth</th><th title="Share of possible landing dates where the Sun covers at least 90% of the stay">Landing dates with Sun</th><th>Slope</th></tr></thead><tbody>${body}</tbody></table>`;
+  $("board").innerHTML = `<table><thead><tr><th>#</th><th>Site</th><th title="Specific point: latitude and longitude, accurate to about 10 m">Latitude / longitude</th><th>Score</th><th>Sun+Earth</th><th>Sun</th><th title="NASA long-term averages: sunlit / Earth visible">NASA map sun / Earth</th><th title="Share of possible landing dates where the Sun covers at least 90% of the stay">Landing dates with Sun</th><th title="Best range of landing dates for the stay">Best landing range</th><th>Slope</th></tr></thead><tbody>${body}</tbody></table>`;
   $("board").querySelectorAll("tr.pick").forEach((tr) => tr.addEventListener("click", () => {
     const s = boardSites[+tr.dataset.i];
     pick(s.lat, s.lon, null);

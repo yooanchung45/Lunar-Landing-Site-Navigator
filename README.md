@@ -13,7 +13,18 @@ communications. It is built on real NASA data, and its answers are checked again
   next to ours.
 - Has a built-in **accuracy check** that compares the simulation to NASA's maps.
 
-<!-- Add screenshots here: docs/map.png (map and overlays), docs/ranking.png (leaderboard), docs/accuracy.png -->
+## Screenshots
+
+![Polar map with shaded relief and the sunlight overlay](docs/map.png)
+*The south pole in polar projection: NASA terrain, NASA's sunlight map overlaid, candidate sites as dots.*
+
+![Elevation, sky view, condition timeline and best landing dates](docs/charts.png)
+*For one site: Sun and Earth elevation over two years, the terrain skyline against their paths, and the best landing-date ranges.*
+
+![Accuracy check against NASA's maps](docs/accuracy.png)
+*The accuracy check: our simulation versus NASA's own maps.*
+
+<!-- Add docs/ranking.png (the ranked leaderboard) here. -->
 
 ## Quick start
 
@@ -137,3 +148,7 @@ Software: [Skyfield](https://rhodesmill.org/skyfield/), [Leaflet](https://leafle
 Typeface: [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono).
 
 This project was built with the help of an AI coding assistant ([Claude Code](https://www.anthropic.com/claude-code)).
+
+## License
+
+MIT, see [LICENSE](LICENSE). NASA, JPL and other third-party data keep their own terms; see the credits above.
