@@ -148,8 +148,7 @@ Software: [Skyfield](https://rhodesmill.org/skyfield/), [Leaflet](https://leafle
 [Rasterio](https://rasterio.readthedocs.io/), NumPy, SciPy, httpx, Uvicorn.
 Typeface: [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono).
 
-This project was built with the help of an AI coding assistant ([Claude Code](https://www.anthropic.com/claude-code)).
+This project was built with the help of an AI coding assistant for research gathering and Troubleshooting ([Claude Code](https://www.anthropic.com/claude-code)).
 
 ## License
-
 MIT, see [LICENSE](LICENSE). NASA, JPL and other third-party data keep their own terms; see the credits above.
