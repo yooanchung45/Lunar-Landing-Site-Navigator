@@ -24,7 +24,8 @@ communications. It is built on real NASA data, and its answers are checked again
 ![Accuracy check against NASA's maps](docs/accuracy.png)
 *The accuracy check: our simulation versus NASA's own maps.*
 
-<!-- Add docs/ranking.png (the ranked leaderboard) here. -->
+![Ranked candidate sites with requirements and weights](docs/ranking.png)
+*Candidate sites ranked by exact coordinates, with the requirements and weights you set. Sites that fail a requirement are ruled out with the reason shown.*
 
 ## Quick start
 
