@@ -168,7 +168,7 @@ function renderBoard() {
     const ok = passes(s), why = s.requirements?.failures ?? [];
     return `<tr class="pick ${ok ? "" : "unsafe"}" data-i="${boardSites.indexOf(s)}"><td>${ok ? i + 1 : "–"}</td><td>${s.name}${s.kind === "published" ? ' <span class="tag" title="A site researchers proposed inside one of the 13 NASA Artemis III candidate regions">published</span>' : ""}<br><span class="hint">${s.near}</span>${ok ? "" : `<br><span class="hint fail">ruled out: ${(why.length ? why : ["slope is too steep"]).join("; ")}</span>`}</td>` +
       `<td>${s.lat.toFixed(4)}°<br>${s.lon.toFixed(4)}°</td>` +
-      `<td><span class="bar" style="width:${Math.round(pts * 0.6)}px"></span>${pts.toFixed(0)}</td>` +
+      `<td class="score"><span class="bar" style="width:${Math.round(pts * 0.5)}px"></span>${pts.toFixed(0)}</td>` +
       `<td>${(sc.both_fraction * 100).toFixed(0)}%</td><td>${(sc.sun_visible_mean * 100).toFixed(0)}%</td>` +
       `<td title="NASA's long-term map (18.6-year average), for comparison">${s.nasa_sun == null ? "n/a" : (s.nasa_sun * 100).toFixed(0) + "%"} / ${s.nasa_earth == null ? "n/a" : (s.nasa_earth * 100).toFixed(0) + "%"}</td>` +
       `<td>${s.mission ? (s.mission.fully_lit_share * 100).toFixed(0) + "%" : "n/a"}</td>` +
