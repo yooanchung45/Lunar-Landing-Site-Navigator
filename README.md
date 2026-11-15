@@ -16,7 +16,7 @@ communications. It is built on real NASA data, and its answers are checked again
 ## Screenshots
 
 ![Polar map with shaded relief and the sunlight overlay](docs/map.png)
-*The south pole in polar projection: NASA terrain, NASA's sunlight map overlaid, candidate sites as dots.*
+*The south pole in polar projection: NASA terrain, NASA's sunlight map overlaid, selected site as the green box, candidate sites as dots.*
 
 ![Elevation, sky view, condition timeline and best landing dates](docs/charts.png)
 *For one site: Sun and Earth elevation over two years, the terrain skyline against their paths, and the best landing-date ranges.*
